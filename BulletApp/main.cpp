@@ -1,7 +1,7 @@
 /*
 	Bullet Tutorial Hello World: http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Hello_World
 */
-
+#include <iostream>
 #include "btBulletDynamicsCommon.h"
 #include <BulletCollision\Gimpact\btGImpactCollisionAlgorithm.h>
 
@@ -60,6 +60,83 @@ int main() {
 
 	// Do_everything_else_here
 
+	/*
+		Collision Shapes
+		We will place a ground plane running through the origin.
+		For pedantic purposes, we will define the collision shape with an offset of 1 unit from the origin.
+	*/
+	btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
+
+	/*
+		The shape that we will let fall from the sky is a sphere with a radius of 1 metre.
+	*/
+	btCollisionShape* fallShape = new btSphereShape(1);
+
+	/*
+		Rigid Bodies
+		Now we can add the collision shapes into our scene, positioning them with rigid body instances.
+		Let's first instantiate the ground. Its orientation is the identity, Bullet quaternions are specified in x,y,z,w form. 
+		The position is 1 metre below the ground, which compensates the 1m offset we had to put into the shape itself. 
+		Motionstates are covered in detail on a page dedicated to them: MotionStates: http://www.bulletphysics.org/mediawiki-1.5.8/index.php/MotionStates
+	*/
+	btDefaultMotionState* groundMotionState =
+		new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
+
+	/*
+		The first and last parameters of the following constructor are the mass and inertia of the ground. 
+		Since the ground is static, we represent this by filling these values with zeros. Bullet considers passing a mass of zero 
+		equivalent to making a body with infinite mass - it is immovable.
+	*/
+	btRigidBody::btRigidBodyConstructionInfo
+		groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
+	btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
+
+	/*
+		Finally, we add the ground to the world:
+	*/
+	dynamicsWorld->addRigidBody(groundRigidBody);
+
+	/*
+		Adding the falling sphere is very similar. We will place it 50m above the ground.
+	*/
+	btDefaultMotionState* fallMotionState =
+		new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
+
+	/*
+		Since it's dynamic we will give it a mass of 1kg. 
+		I can't remember how to calculate the inertia of a sphere, but that doesn't matter because Bullet provides a utility function:
+	*/
+
+	btScalar mass = 1;
+	btVector3 fallInertia(0, 0, 0);
+	fallShape->calculateLocalInertia(mass, fallInertia);
+
+	/*
+		Now we can construct the rigid body just like before, and add it to the world:
+	*/
+	btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, fallShape, fallInertia);
+	btRigidBody* fallRigidBody = new btRigidBody(fallRigidBodyCI);
+	dynamicsWorld->addRigidBody(fallRigidBody);
+
+	/*
+		Stepping the simulation
+		This is where the fun begins. We will step the simulation 300 times, at an interval of 60hz. 
+		This will give the sphere enough time to hit the ground under the influence of gravity. Each step, we will print out its height above the ground.
+
+		The stepSimulation function does what you'd expect, but its interface is fairly complicated. Read Stepping The World for more details.
+		http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Stepping_The_World
+	*/
+	for (int i = 0; i < 300; i++) {
+
+		dynamicsWorld->stepSimulation(1 / 60.f, 10);
+
+		btTransform trans;
+		fallRigidBody->getMotionState()->getWorldTransform(trans);
+
+		std::cout << "sphere height: " << trans.getOrigin().getY() << std::endl;
+	}
+
+	std::cin.get();
 	// End of Do_everything_else_here
 
 	/*
@@ -68,11 +145,23 @@ int main() {
 
 		Clean up behind ourselves like good little programmers
 	*/
+
+	dynamicsWorld->removeRigidBody(fallRigidBody);
+	delete fallRigidBody->getMotionState();
+	delete fallRigidBody;
+
+	dynamicsWorld->removeRigidBody(groundRigidBody);
+	delete groundRigidBody->getMotionState();
+	delete groundRigidBody;
+
+	delete groundShape;
+
 	delete dynamicsWorld;
 	delete solver;
 	delete dispatcher;
 	delete collisionConfiguration;
 	delete broadphase;
+	delete fallShape;
 
 	return 0;
 }
