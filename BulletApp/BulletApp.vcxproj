@@ -103,6 +103,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\dev\bullet3-2.86.1\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -137,6 +138,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\dev\bullet3-2.86.1\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,6 +148,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\build\src\BulletCollision\BulletCollision.vcxproj">
+      <Project>{f6655e6f-d07a-3550-836e-f5b59ebebdc3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\build\src\BulletDynamics\BulletDynamics.vcxproj">
+      <Project>{33ca9c0f-a188-37c7-bafa-f5a479a3c1fc}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\build\src\LinearMath\LinearMath.vcxproj">
+      <Project>{bf443c12-5912-31cd-9997-2b24c24e82c4}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
